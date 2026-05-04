@@ -18,7 +18,19 @@ function resolveEmoji(input) {
     if (found) return found.emoji;
   }
 
-  return input; // already a unicode char or name:id
+  return input;
+}
+
+async function discordGet(url, token) {
+  const response = await fetch(url, {
+    headers: { Authorization: `Bot ${token}` },
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    const detail = err.errors ? ` — ${JSON.stringify(err.errors)}` : "";
+    throw new Error(`${err.message}${detail} (HTTP ${response.status}, code ${err.code})`);
+  }
+  return response.json();
 }
 
 let win;
@@ -43,7 +55,7 @@ app.whenReady().then(createWindow);
 
 ipcMain.handle(
   "fetch-reactions",
-  async (_, { token, channelId, messageId, emoji }) => {
+  async (_, { token, channelId, messageId, emoji, guildId }) => {
     const encodedEmoji = encodeURIComponent(resolveEmoji(emoji));
     const baseUrl = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/${encodedEmoji}`;
 
@@ -55,21 +67,16 @@ ipcMain.handle(
         ? `${baseUrl}?limit=100&after=${after}`
         : `${baseUrl}?limit=100`;
 
-      const response = await fetch(url, {
-        headers: { Authorization: `Bot ${token}` },
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        const detail = err.errors ? ` — ${JSON.stringify(err.errors)}` : "";
-        throw new Error(`${err.message}${detail} (HTTP ${response.status}, code ${err.code})`);
-      }
-
-      const batch = await response.json();
+      const batch = await discordGet(url, token);
 
       for (const user of batch) {
         if (!user.bot) {
-          users.push({ id: user.id, tag: user.username });
+          users.push({
+            id: user.id,
+            username: user.username,
+            globalName: user.global_name ?? user.username,
+            nick: null,
+          });
         }
       }
 
@@ -77,6 +84,23 @@ ipcMain.handle(
       after = batch[batch.length - 1].id;
     }
 
+    if (guildId) {
+      const memberResults = await Promise.allSettled(
+        users.map((user) =>
+          discordGet(
+            `https://discord.com/api/v10/guilds/${guildId}/members/${user.id}`,
+            token
+          )
+        )
+      );
+
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          users[i].nick = result.value.nick ?? null;
+        }
+      });
+    }
+
     return users;
-  },
+  }
 );
