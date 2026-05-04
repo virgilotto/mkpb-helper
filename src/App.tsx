@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type View = "name" | "splash" | "main";
 type DisplayMode = "serverName" | "globalName" | "username" | "id";
 
 const displayLabels: Record<DisplayMode, string> = {
@@ -48,7 +49,70 @@ function displayUser(user: User, mode: DisplayMode): string {
   }
 }
 
+function NameScreen({ onSubmit }: { onSubmit: (name: string) => void }) {
+  const [name, setName] = useState("");
+
+  const handleSubmit = () => {
+    if (name.trim()) onSubmit(name.trim());
+  };
+
+  return (
+    <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
+      <div className="w-full max-w-sm flex flex-col gap-6 text-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">
+            Welcome
+          </h1>
+          <p className="text-[#949ba4] text-sm mt-1">
+            What should we call you?
+          </p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <Input
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            autoFocus
+            className="bg-[#2b2d31] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0 text-center"
+          />
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+            className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
+          >
+            Continue
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SplashScreen({ name }: { name: string }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const show = setTimeout(() => setVisible(true), 50);
+    return () => clearTimeout(show);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center">
+      <h1
+        className="text-4xl font-bold text-white tracking-tight transition-opacity duration-700"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        Welcome, {name}
+      </h1>
+    </div>
+  );
+}
+
 function App() {
+  const [view, setView] = useState<View>("name");
+  const [userName, setUserName] = useState("");
+
   const [form, setForm] = useState({
     token: "",
     channelId: "",
@@ -62,6 +126,20 @@ function App() {
   const [error, setError] = useState("");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("username");
   const [activeGuildId, setActiveGuildId] = useState("");
+
+  const splashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleNameSubmit = (name: string) => {
+    setUserName(name);
+    setView("splash");
+    splashTimer.current = setTimeout(() => setView("main"), 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (splashTimer.current) clearTimeout(splashTimer.current);
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -83,6 +161,9 @@ function App() {
 
     setLoading(false);
   };
+
+  if (view === "name") return <NameScreen onSubmit={handleNameSubmit} />;
+  if (view === "splash") return <SplashScreen name={userName} />;
 
   return (
     <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
@@ -154,7 +235,9 @@ function App() {
                 </Badge>
                 <button
                   onClick={() => {
-                    const text = users.map((u) => displayUser(u, displayMode)).join("\n");
+                    const text = users
+                      .map((u) => displayUser(u, displayMode))
+                      .join("\n");
                     navigator.clipboard.writeText(text);
                   }}
                   className="text-[#949ba4] hover:text-white text-xs transition-colors cursor-pointer"
