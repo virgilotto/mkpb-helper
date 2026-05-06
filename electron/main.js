@@ -28,7 +28,9 @@ async function discordGet(url, token) {
   if (!response.ok) {
     const err = await response.json();
     const detail = err.errors ? ` — ${JSON.stringify(err.errors)}` : "";
-    throw new Error(`${err.message}${detail} (HTTP ${response.status}, code ${err.code})`);
+    throw new Error(
+      `${err.message}${detail} (HTTP ${response.status}, code ${err.code})`,
+    );
   }
   return response.json();
 }
@@ -37,8 +39,8 @@ let win;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 900,
-    height: 700,
+    width: 1200,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
     },
@@ -89,9 +91,9 @@ ipcMain.handle(
         users.map((user) =>
           discordGet(
             `https://discord.com/api/v10/guilds/${guildId}/members/${user.id}`,
-            token
-          )
-        )
+            token,
+          ),
+        ),
       );
 
       memberResults.forEach((result, i) => {
@@ -102,5 +104,5 @@ ipcMain.handle(
     }
 
     return users;
-  }
+  },
 );

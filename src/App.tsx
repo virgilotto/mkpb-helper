@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import monkeyImg from "./assets/monkey.png";
+import bgGif from "./assets/chae.gif";
 
 declare global {
   interface Window {
@@ -49,23 +51,69 @@ function displayUser(user: User, mode: DisplayMode): string {
   }
 }
 
+const COLUMNS = 5;
+const DROPS_PER_COLUMN = 3;
+const DURATION = 7;
+// time for one gif-height (128px) to travel the full path (≈100vh + 240px, assuming ~700px viewport)
+const DIAGONAL_DELAY = (DURATION * 128) / 940;
 
-function SplashScreen({ name }: { name: string }) {
-  const [visible, setVisible] = useState(false);
+function RainBackground() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {Array.from({ length: COLUMNS }, (_, col) =>
+        Array.from({ length: DROPS_PER_COLUMN }, (_, drop) => (
+          <img
+            key={`${col}-${drop}`}
+            src={bgGif}
+            className="absolute w-32 h-32 object-contain opacity-15"
+            style={{
+              left: `${(col / (COLUMNS - 1)) * 88}%`,
+              animation: `shower ${DURATION}s linear infinite`,
+              animationDelay: `${-DURATION * (drop / DROPS_PER_COLUMN) - col * DIAGONAL_DELAY}s`,
+            }}
+          />
+        )),
+      ).flat()}
+    </div>
+  );
+}
+
+function SplashScreen({ name, onNext }: { name: string; onNext: () => void }) {
+  const [textVisible, setTextVisible] = useState(false);
+  const [monkeyVisible, setMonkeyVisible] = useState(false);
 
   useEffect(() => {
-    const show = setTimeout(() => setVisible(true), 50);
-    return () => clearTimeout(show);
+    const showText = setTimeout(() => setTextVisible(true), 50);
+    const showMonkey = setTimeout(() => setMonkeyVisible(true), 800);
+    return () => {
+      clearTimeout(showText);
+      clearTimeout(showMonkey);
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center">
+    <div className="min-h-screen bg-[#1e1f22] flex flex-col items-center justify-center gap-12 overflow-hidden">
       <h1
-        className="text-4xl font-bold text-white tracking-tight transition-opacity duration-700"
-        style={{ opacity: visible ? 1 : 0 }}
+        className="text-6xl font-bold text-white tracking-tight transition-opacity duration-700"
+        style={{ opacity: textVisible ? 1 : 0 }}
       >
         Welcome, {name}
       </h1>
+
+      <button
+        onClick={onNext}
+        className="cursor-pointer border-none bg-transparent p-0"
+        style={{
+          transform: monkeyVisible ? "translateY(0)" : "translateY(100vh)",
+          transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      >
+        <img
+          src={monkeyImg}
+          alt="Enter"
+          className="monkey-spin w-36 h-36 object-contain"
+        />
+      </button>
     </div>
   );
 }
@@ -86,18 +134,6 @@ function App() {
   const [error, setError] = useState("");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("username");
   const [activeGuildId, setActiveGuildId] = useState("");
-
-  const splashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    splashTimer.current = setTimeout(() => setView("main"), 2500);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (splashTimer.current) clearTimeout(splashTimer.current);
-    };
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -120,11 +156,13 @@ function App() {
     setLoading(false);
   };
 
-  if (view === "splash") return <SplashScreen name="Drew" />;
+  if (view === "splash")
+    return <SplashScreen name="Drew" onNext={() => setView("main")} />;
 
   return (
     <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+      <RainBackground />
+      <div className="relative z-10 w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Reaction Inspector

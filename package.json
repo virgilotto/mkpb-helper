@@ -1,5 +1,5 @@
 {
-  "name": "reaction-inspector",
+  "name": "mkpb-helper",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,13 +11,15 @@
   },
   "build": {
     "appId": "com.reaction-inspector.app",
-    "productName": "Reaction Inspector",
+    "productName": "MKPB Helper",
+    "icon": "build/icon.png",
     "files": [
       "dist/**/*",
       "electron/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icon.ico"
     },
     "mac": {
       "target": "dmg"
