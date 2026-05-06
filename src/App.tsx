@@ -49,45 +49,6 @@ function displayUser(user: User, mode: DisplayMode): string {
   }
 }
 
-function NameScreen({ onSubmit }: { onSubmit: (name: string) => void }) {
-  const [name, setName] = useState("");
-
-  const handleSubmit = () => {
-    if (name.trim()) onSubmit(name.trim());
-  };
-
-  return (
-    <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
-      <div className="w-full max-w-sm flex flex-col gap-6 text-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Welcome
-          </h1>
-          <p className="text-[#949ba4] text-sm mt-1">
-            What should we call you?
-          </p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <Input
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            autoFocus
-            className="bg-[#2b2d31] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0 text-center"
-          />
-          <Button
-            onClick={handleSubmit}
-            disabled={!name.trim()}
-            className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
-          >
-            Continue
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function SplashScreen({ name }: { name: string }) {
   const [visible, setVisible] = useState(false);
@@ -110,8 +71,7 @@ function SplashScreen({ name }: { name: string }) {
 }
 
 function App() {
-  const [view, setView] = useState<View>("name");
-  const [userName, setUserName] = useState("");
+  const [view, setView] = useState<View>("splash");
 
   const [form, setForm] = useState({
     token: "",
@@ -129,11 +89,9 @@ function App() {
 
   const splashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleNameSubmit = (name: string) => {
-    setUserName(name);
-    setView("splash");
+  useEffect(() => {
     splashTimer.current = setTimeout(() => setView("main"), 2500);
-  };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -162,8 +120,7 @@ function App() {
     setLoading(false);
   };
 
-  if (view === "name") return <NameScreen onSubmit={handleNameSubmit} />;
-  if (view === "splash") return <SplashScreen name={userName} />;
+  if (view === "splash") return <SplashScreen name="Drew" />;
 
   return (
     <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
