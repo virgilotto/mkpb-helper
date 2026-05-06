@@ -22,8 +22,12 @@
       "icon": "build/icon.ico"
     },
     "mac": {
-      "target": "dmg",
-      "arch": ["arm64"]
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ]
     }
   },
   "dependencies": {
