@@ -122,11 +122,11 @@ function App() {
   const [view, setView] = useState<View>("splash");
 
   const [form, setForm] = useState({
-    token: "",
-    channelId: "",
+    token: localStorage.getItem("token") ?? "",
+    channelId: localStorage.getItem("channelId") ?? "",
     messageId: "",
     emoji: "",
-    guildId: "",
+    guildId: localStorage.getItem("guildId") ?? "",
   });
 
   const [users, setUsers] = useState<User[]>([]);
@@ -136,6 +136,8 @@ function App() {
   const [activeGuildId, setActiveGuildId] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (["token", "channelId", "guildId"].includes(e.target.name))
+      localStorage.setItem(e.target.name, e.target.value);
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -165,11 +167,9 @@ function App() {
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Reaction Inspector
+            MKPB Helper
           </h1>
-          <p className="text-[#949ba4] text-sm mt-1">
-            Fetch who reacted to a Discord message
-          </p>
+          <p className="text-[#949ba4] text-sm mt-1">Reactions fetcher</p>
         </div>
 
         <div className="bg-[#2b2d31] rounded-xl p-6 flex flex-col gap-3 shadow-xl">
@@ -177,12 +177,14 @@ function App() {
             name="token"
             type="password"
             placeholder="Bot Token"
+            value={form.token}
             onChange={handleChange}
             className="bg-[#1e1f22] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0"
           />
           <Input
             name="channelId"
             placeholder="Channel ID"
+            value={form.channelId}
             onChange={handleChange}
             className="bg-[#1e1f22] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0"
           />
@@ -201,6 +203,7 @@ function App() {
           <Input
             name="guildId"
             placeholder="Server ID (optional — for server nicknames)"
+            value={form.guildId}
             onChange={handleChange}
             className="bg-[#1e1f22] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0"
           />
