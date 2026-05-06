@@ -71,6 +71,7 @@ function RainBackground() {
               left: `${(col / (COLUMNS - 1)) * 88}%`,
               animation: `shower ${DURATION}s linear infinite`,
               animationDelay: `${-DURATION * (drop / DROPS_PER_COLUMN) - col * DIAGONAL_DELAY}s`,
+              willChange: "transform",
             }}
           />
         )),
