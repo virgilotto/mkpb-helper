@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import monkeyImg from "./assets/monkey.png";
 import bgGif from "./assets/chae.gif";
+import chae2Gif from "./assets/chae2.gif";
 
 declare global {
   interface Window {
@@ -81,13 +82,16 @@ function RainBackground() {
 function SplashScreen({ name, onNext }: { name: string; onNext: () => void }) {
   const [textVisible, setTextVisible] = useState(false);
   const [monkeyVisible, setMonkeyVisible] = useState(false);
+  const [monkeyArrived, setMonkeyArrived] = useState(false);
 
   useEffect(() => {
     const showText = setTimeout(() => setTextVisible(true), 50);
     const showMonkey = setTimeout(() => setMonkeyVisible(true), 800);
+    const bounceMonkey = setTimeout(() => setMonkeyArrived(true), 1700);
     return () => {
       clearTimeout(showText);
       clearTimeout(showMonkey);
+      clearTimeout(bounceMonkey);
     };
   }, []);
 
@@ -111,7 +115,7 @@ function SplashScreen({ name, onNext }: { name: string; onNext: () => void }) {
         <img
           src={monkeyImg}
           alt="Enter"
-          className="monkey-spin w-36 h-36 object-contain"
+          className={`monkey-spin w-36 h-36 object-contain${monkeyArrived ? " monkey-bounce" : ""}`}
         />
       </button>
     </div>
@@ -134,6 +138,8 @@ function App() {
   const [error, setError] = useState("");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("username");
   const [activeGuildId, setActiveGuildId] = useState("");
+  const [lastFetched, setLastFetched] = useState<Date | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (["token", "channelId", "guildId"].includes(e.target.name))
@@ -145,17 +151,25 @@ function App() {
     setLoading(true);
     setError("");
     setUsers([]);
+    setCelebrating(false);
+    document.title = "Grabbing reacts...";
 
     try {
       const result = await window.api.fetchReactions(form);
       setUsers(result);
       setActiveGuildId(form.guildId);
       setDisplayMode(form.guildId ? "serverName" : "username");
+      setLastFetched(new Date());
+      if (result.length > 0) {
+        setCelebrating(true);
+        setTimeout(() => setCelebrating(false), 2500);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     }
 
     setLoading(false);
+    document.title = "MKPB Helper";
   };
 
   if (view === "splash")
@@ -213,7 +227,7 @@ function App() {
             disabled={loading}
             className="mt-1 bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
           >
-            {loading ? "Fetching..." : "Fetch Reactions"}
+            {loading ? "Grabbing..." : "Grab Reacts"}
           </Button>
 
           {error && (
@@ -223,7 +237,18 @@ function App() {
           )}
         </div>
 
-        {users.length > 0 && (
+        {celebrating && (
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <span className="text-white text-sm font-semibold tracking-wide">
+              Cooking Results...
+            </span>
+            <div className="w-64 rounded-xl overflow-hidden shadow-xl">
+              <img src={chae2Gif} alt="" className="w-full object-cover" />
+            </div>
+          </div>
+        )}
+
+        {!celebrating && users.length > 0 && (
           <div className="mt-4 bg-[#2b2d31] rounded-xl shadow-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-[#1e1f22] flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 shrink-0">
@@ -231,6 +256,11 @@ function App() {
                 <Badge className="bg-[#5865f2] text-white text-xs">
                   {users.length}
                 </Badge>
+                {lastFetched && (
+                  <span className="text-[#6d6f78] text-xs">
+                    {lastFetched.toLocaleTimeString()}
+                  </span>
+                )}
                 <button
                   onClick={() => {
                     const text = users

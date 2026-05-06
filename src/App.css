@@ -11,3 +11,17 @@
   from { transform: translateY(-120px); }
   to   { transform: translateY(calc(100vh + 120px)); }
 }
+
+@keyframes bounce-in {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-18px); }
+  50%  { transform: translateY(0); }
+  70%  { transform: translateY(-9px); }
+  85%  { transform: translateY(0); }
+  95%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+.monkey-bounce {
+  animation: bounce-in 0.7s ease-out;
+}
