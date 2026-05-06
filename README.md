@@ -1,74 +1,77 @@
-# React + TypeScript + Vite
+# MKPB Helper
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A desktop app that fetches everyone who reacted to a Discord message with a specific emoji — useful for giveaways, polls, or picking winners from reactions.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Installation
 
-## React Compiler
+- **Windows:** run the `.exe` installer, or use the portable `.exe` directly (no install needed)
+- **Mac:** open the `.dmg`, drag the app to Applications (or just double-click it from the DMG)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Before You Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+You'll need two things set up in Discord:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**1. Developer Mode** — this lets you copy IDs from Discord.
+Go to **User Settings → Advanced → Developer Mode** and turn it on.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**2. A bot token** — the app uses a Discord bot to read reactions. You should already have this. It looks something like `MTExODk1...` and goes in the Bot Token field. It's saved automatically so you only need to paste it once.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## How to Use
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Fill in the fields and hit **Grab Reacts**.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# reaction-inspector
+| Field | What to put |
+|---|---|
+| **Bot Token** | Your Discord bot's token. Saved automatically. |
+| **Channel ID** | Right-click the channel in Discord → Copy Channel ID |
+| **Message ID** | Right-click the message → Copy Message ID |
+| **Emoji** | Paste the emoji directly (🔥), or type `:fire:`, or copy a custom emoji from Discord (it'll look like `<:name:12345>`) |
+| **Server ID** | *(Optional)* Right-click the server name → Copy Server ID. Only needed if you want to see server nicknames. Saved automatically. |
+
+---
+
+## Results
+
+Once fetched, a list of everyone who reacted appears below the form.
+
+**Display options** — use the dropdown to switch how names are shown:
+- **Server nickname** — the name the person set specifically for your server *(only available if you filled in Server ID)*
+- **Display name** — their global Discord display name
+- **Username** — their unique Discord username (e.g. `cooluser123`)
+- **User ID** — their numeric Discord ID
+
+**Copy** — click the Copy button next to the reactor count to copy the full list to your clipboard, one name per line. Paste it directly into [Wheel of Names](https://wheelofnames.com) or anywhere else.
+
+**Last fetched time** — shown next to the reactor count so you know how fresh the data is.
+
+---
+
+## Troubleshooting
+
+### Mac says the app is damaged or from an unidentified developer
+
+This is a standard macOS warning for apps that aren't signed with an Apple certificate — the app is fine, macOS is just being cautious.
+
+When the warning appears, don't click Move to Trash. Instead:
+
+1. Go to **System Settings → Privacy & Security**
+2. Scroll down until you see a message about MKPB Helper being blocked
+3. Click **Open Anyway**
+4. Confirm on the prompt that appears
+
+The warning only appears the first time — after that the app opens normally.
+
+---
+
+## Notes
+
+- The app filters out bots automatically — only real users appear in the list
+- **Bot Token**, **Channel ID**, and **Server ID** are saved between sessions so you don't have to re-enter them every time
+- **Message ID** and **Emoji** are intentionally not saved since those change every time
+- If you get an error like *"Missing Access"*, the bot likely doesn't have permission to read that channel
