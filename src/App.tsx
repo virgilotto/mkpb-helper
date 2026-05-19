@@ -250,7 +250,11 @@ function ReactionsTab({ token, guildId }: { token: string; guildId: string }) {
     document.title = "Grabbing reacts...";
 
     try {
-      const result = await window.api.fetchReactions({ ...form, token, guildId });
+      const result = await window.api.fetchReactions({
+        ...form,
+        token,
+        guildId,
+      });
       setUsers(result);
       setActiveGuildId(guildId);
       setDisplayMode(guildId ? "serverName" : "username");
@@ -272,7 +276,7 @@ function ReactionsTab({ token, guildId }: { token: string; guildId: string }) {
       <div className="bg-[#2b2d31] rounded-xl p-6 flex flex-col gap-3 shadow-xl">
         <Input
           name="channelId"
-          placeholder="Channel ID"
+          placeholder="Channel/Thread ID"
           value={form.channelId}
           onChange={handleChange}
           className="bg-[#1e1f22] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0"
@@ -332,7 +336,11 @@ function RoleTab({ token, guildId }: { token: string; guildId: string }) {
     document.title = "Grabbing members...";
 
     try {
-      const result = await window.api.fetchRoleMembers({ token, guildId, roleId });
+      const result = await window.api.fetchRoleMembers({
+        token,
+        guildId,
+        roleId,
+      });
       setUsers(result);
       setDisplayMode(guildId ? "serverName" : "username");
       setLastFetched(new Date());
