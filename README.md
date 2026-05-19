@@ -17,8 +17,14 @@ You'll need two things set up in Discord:
 
 **1. Developer Mode** — this lets you copy IDs from Discord.
 Go to **User Settings → Advanced → Developer Mode** and turn it on.
+Then you can right click anything (server, channel, messages) and copy the needed IDs.
 
 **2. A bot token** — the app uses a Discord bot to read reactions. You should already have this. It looks something like `MTExODk1...` and goes in the Bot Token field. It's saved automatically so you only need to paste it once.
+If not:
+- go to Discord Developer Portal
+- Applications -> New Application -> Give it a name, icon, etc.
+- OAuth2 -> OAuth2 URL Generator (select "bot") -> Give permisisons (mostly read, so the bot can get access to messages/reacts, like "View Channels", "Read Message History" - these should be mandatory and enough) -> Copy the Generated URL below and invite it to the server
+- Bot -> Reset Token -> Get your token (this is crucial for everything to work)
 
 ---
 
