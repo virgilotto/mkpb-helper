@@ -106,3 +106,35 @@ ipcMain.handle(
     return users;
   },
 );
+
+ipcMain.handle(
+  "fetch-role-members",
+  async (_, { token, guildId, roleId }) => {
+    const users = [];
+    let after = null;
+
+    while (true) {
+      const url = after
+        ? `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000&after=${after}`
+        : `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`;
+
+      const batch = await discordGet(url, token);
+
+      for (const member of batch) {
+        if (!member.user.bot && member.roles.includes(roleId)) {
+          users.push({
+            id: member.user.id,
+            username: member.user.username,
+            globalName: member.user.global_name ?? member.user.username,
+            nick: member.nick ?? null,
+          });
+        }
+      }
+
+      if (batch.length < 1000) break;
+      after = batch[batch.length - 1].user.id;
+    }
+
+    return users;
+  },
+);
