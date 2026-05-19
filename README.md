@@ -1,6 +1,8 @@
 # MKPB Helper
 
-A desktop app that fetches everyone who reacted to a Discord message with a specific emoji — useful for giveaways, polls, or picking winners from reactions.
+A desktop app with two tools:
+- **Reactions** — fetch everyone who reacted to a Discord message with a specific emoji
+- **Role Members** — fetch everyone in a server who has a specific role
 
 ---
 
@@ -30,35 +32,59 @@ If not:
 
 ## How to Use
 
+Bot Token and Server ID live in **Settings** (the cog icon ⚙️ in the top-right corner). These are saved automatically and rarely need changing.
+
+### Reactions tab
+
 Fill in the fields and hit **Grab Reacts**.
 
 | Field | What to put |
 |---|---|
-| **Bot Token** | Your Discord bot's token. Saved automatically. |
 | **Channel ID** | Right-click the channel in Discord → Copy Channel ID |
 | **Message ID** | Right-click the message → Copy Message ID |
 | **Emoji** | Paste the emoji directly (🔥), or type `:fire:`, or copy a custom emoji from Discord (it'll look like `<:name:12345>`) |
-| **Server ID** | *(Optional)* Right-click the server name → Copy Server ID. Only needed if you want to see server nicknames. Saved automatically. |
+
+### Role Members tab
+
+Fill in the Role ID and hit **Grab Members**.
+
+| Field | What to put |
+|---|---|
+| **Role ID** | Right-click the role in Server Settings → Copy Role ID |
+
+> Server ID must be set in Settings for this tab to work.
 
 ---
 
 ## Results
 
-Once fetched, a list of everyone who reacted appears below the form.
+Once fetched, a list of users appears below the form.
 
 **Display options** — use the dropdown to switch how names are shown:
-- **Server nickname** — the name the person set specifically for your server *(only available if you filled in Server ID)*
+- **Server nickname** — the name the person set specifically for your server *(only available if Server ID is set)*
 - **Display name** — their global Discord display name
 - **Username** — their unique Discord username (e.g. `cooluser123`)
 - **User ID** — their numeric Discord ID
 
-**Copy** — click the Copy button next to the reactor count to copy the full list to your clipboard, one name per line. Paste it directly into [Wheel of Names](https://wheelofnames.com) or anywhere else.
+**Copy** — click the Copy button next to the count to copy the full list to your clipboard, one name per line. Paste it directly into [Wheel of Names](https://wheelofnames.com) or anywhere else.
 
-**Last fetched time** — shown next to the reactor count so you know how fresh the data is.
+**Last fetched time** — shown next to the count so you know how fresh the data is.
 
 ---
 
 ## Troubleshooting
+
+### "Missing Access" error when fetching role members
+
+The bot needs the **Server Members Intent** enabled to list server members. To fix it:
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Select your bot application → **Bot**
+3. Scroll to **Privileged Gateway Intents**
+4. Enable **Server Members Intent**
+5. Save
+
+---
 
 ### Mac says the app is damaged or from an unidentified developer
 
