@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import monkeyImg from "./assets/monkey.png";
-import bgGif from "./assets/chae.gif";
+import chaeGif from "./assets/chae.gif";
 import chae2Gif from "./assets/chae2.gif";
+import unicornImg from "./assets/unicorn.png";
+import natyImg from "./assets/naty.png";
+import sanaImg from "./assets/sana.jpg";
+import rockyGif from "./assets/rocky.gif";
 import { ChevronDown, Settings } from "lucide-react";
 
 declare global {
@@ -57,29 +61,136 @@ function displayUser(user: User, mode: DisplayMode): string {
   }
 }
 
-const COLUMNS = 5;
-const DROPS_PER_COLUMN = 3;
-const DURATION = 7;
-const DIAGONAL_DELAY = (DURATION * 128) / 940;
+const BUMPING_IMGS = [
+  chaeGif,
+  unicornImg,
+  natyImg,
+  natyImg,
+  sanaImg,
+  rockyGif,
+  rockyGif,
+  chaeGif,
+  unicornImg,
+  natyImg,
+  natyImg,
+  sanaImg,
+  rockyGif,
+  rockyGif,
+  chaeGif,
+  unicornImg,
+  natyImg,
+  natyImg,
+  sanaImg,
+  rockyGif,
+  rockyGif,
+];
+// adjust for image size
+const SIZE = 120;
+const RADIUS = 65;
 
-function RainBackground() {
+function BumpingBackground() {
+  const rafRef = useRef<number>(0);
+  const stateRef = useRef<{ x: number; y: number; vx: number; vy: number }[]>(
+    [],
+  );
+  const imgRefs = useRef<(HTMLImageElement | null)[]>(
+    Array(BUMPING_IMGS.length).fill(null),
+  );
+
+  useEffect(() => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    stateRef.current = BUMPING_IMGS.map(() => {
+      // adjust for speed range
+      const speed = 0.1 + Math.random() * 2;
+      const angle = Math.random() * Math.PI * 2;
+      return {
+        x: Math.random() * (w - SIZE),
+        y: Math.random() * (h - SIZE),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+      };
+    });
+
+    const tick = () => {
+      const items = stateRef.current;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      items.forEach((item, i) => {
+        item.x += item.vx;
+        item.y += item.vy;
+
+        if (item.x <= 0) {
+          item.x = 0;
+          item.vx = Math.abs(item.vx);
+        }
+        if (item.x >= w - SIZE) {
+          item.x = w - SIZE;
+          item.vx = -Math.abs(item.vx);
+        }
+        if (item.y <= 0) {
+          item.y = 0;
+          item.vy = Math.abs(item.vy);
+        }
+        if (item.y >= h - SIZE) {
+          item.y = h - SIZE;
+          item.vy = -Math.abs(item.vy);
+        }
+
+        const el = imgRefs.current[i];
+        if (el) el.style.transform = `translate(${item.x}px, ${item.y}px)`;
+      });
+
+      for (let pass = 0; pass < 3; pass++) {
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            const a = items[i];
+            const b = items[j];
+            const dx = a.x + SIZE / 2 - (b.x + SIZE / 2);
+            const dy = a.y + SIZE / 2 - (b.y + SIZE / 2);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < RADIUS * 2 && dist > 0) {
+              const nx = dx / dist;
+              const ny = dy / dist;
+              const dot = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+              if (dot < 0) {
+                a.vx -= dot * nx;
+                a.vy -= dot * ny;
+                b.vx += dot * nx;
+                b.vy += dot * ny;
+              }
+              const overlap = (RADIUS * 2 - dist) / 2;
+              a.x += nx * overlap;
+              a.y += ny * overlap;
+              b.x -= nx * overlap;
+              b.y -= ny * overlap;
+            }
+          }
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {Array.from({ length: COLUMNS }, (_, col) =>
-        Array.from({ length: DROPS_PER_COLUMN }, (_, drop) => (
-          <img
-            key={`${col}-${drop}`}
-            src={bgGif}
-            className="absolute w-32 h-32 object-contain opacity-15"
-            style={{
-              left: `${(col / (COLUMNS - 1)) * 88}%`,
-              animation: `shower ${DURATION}s linear infinite`,
-              animationDelay: `${-DURATION * (drop / DROPS_PER_COLUMN) - col * DIAGONAL_DELAY}s`,
-              willChange: "transform",
-            }}
-          />
-        )),
-      ).flat()}
+      {BUMPING_IMGS.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          ref={(el) => {
+            imgRefs.current[i] = el;
+          }}
+          className="absolute top-0 left-0 object-contain opacity-100"
+          style={{ width: SIZE, height: SIZE }}
+        />
+      ))}
     </div>
   );
 }
@@ -596,8 +707,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#1e1f22] flex items-center justify-center p-6">
-      <RainBackground />
-      <div className="relative z-10 w-full max-w-md">
+      <BumpingBackground />
+      <div className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-sm rounded-2xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">
