@@ -78,6 +78,7 @@ ipcMain.handle(
             username: user.username,
             globalName: user.global_name ?? user.username,
             nick: null,
+            avatar: user.avatar ?? null,
           });
         }
       }
@@ -127,6 +128,7 @@ ipcMain.handle(
             username: member.user.username,
             globalName: member.user.global_name ?? member.user.username,
             nick: member.nick ?? null,
+            avatar: member.user.avatar ?? null,
           });
         }
       }

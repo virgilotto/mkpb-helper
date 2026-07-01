@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import monkeyImg from "./assets/monkey.png";
 import bgGif from "./assets/chae.gif";
 import chae2Gif from "./assets/chae2.gif";
-import { Settings } from "lucide-react";
+import { ChevronDown, Settings } from "lucide-react";
 
 declare global {
   interface Window {
@@ -41,6 +41,7 @@ type User = {
   username: string;
   globalName: string;
   nick: string | null;
+  avatar: string | null;
 };
 
 function displayUser(user: User, mode: DisplayMode): string {
@@ -133,6 +134,7 @@ type UserListProps = {
   lastFetched: Date | null;
   activeGuildId: string;
   celebrating: boolean;
+  showExport?: boolean;
 };
 
 function UserList({
@@ -143,7 +145,67 @@ function UserList({
   lastFetched,
   activeGuildId,
   celebrating,
+  showExport,
 }: UserListProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const copyList = () => {
+    const text = users.map((u) => displayUser(u, displayMode)).join("\n");
+    navigator.clipboard.writeText(text);
+    setMenuOpen(false);
+  };
+
+  const exportForHG = () => {
+    const PLACEHOLDER = "https://cdn.discordapp.com/embed/avatars/0.png";
+
+    const avatarUrl = (user: User) =>
+      user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        : PLACEHOLDER;
+    const PER_DISTRICT = 4;
+    const lines: string[] = [
+      "MKPB Hunger Games",
+      "https://cdn.discordapp.com/banners/1475012785397039134/7077a57fd04209f8485873a0823d1ebb.png",
+      "",
+      "",
+    ];
+
+    for (let d = 0; d < Math.ceil(users.length / PER_DISTRICT); d++) {
+      const slice = users.slice(d * PER_DISTRICT, (d + 1) * PER_DISTRICT);
+      lines.push(`District ${d + 1}`, "#FFFFFF 0 0", "");
+      slice.forEach((user, i) => {
+        lines.push(
+          user.nick ?? user.globalName ?? user.username,
+          user.globalName ?? user.username,
+          "4",
+          avatarUrl(user),
+          "BW",
+          "",
+        );
+        if (i === slice.length - 1) lines.push(""); // extra blank line after last player to trigger new district
+      });
+    }
+
+    while (lines.at(-1) === "") lines.pop();
+
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "hg-cast.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <>
       {celebrating && (
@@ -170,17 +232,35 @@ function UserList({
                   {lastFetched.toLocaleTimeString()}
                 </span>
               )}
-              <button
-                onClick={() => {
-                  const text = users
-                    .map((u) => displayUser(u, displayMode))
-                    .join("\n");
-                  navigator.clipboard.writeText(text);
-                }}
-                className="text-[#949ba4] hover:text-white text-xs transition-colors cursor-pointer"
-              >
-                Copy
-              </button>
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className="text-[#949ba4] hover:text-white transition-colors cursor-pointer p-1 rounded"
+                >
+                  <ChevronDown size={14} />
+                </button>
+                {menuOpen && (
+                  <div className="absolute left-0 top-6 bg-[#1e1f22] border border-[#3f4147] rounded-lg shadow-xl z-20 py-1 min-w-36">
+                    <button
+                      onClick={copyList}
+                      className="w-full text-left px-3 py-1.5 text-xs text-[#dbdee1] hover:bg-[#35373c] transition-colors cursor-pointer"
+                    >
+                      Copy list
+                    </button>
+                    {showExport && (
+                      <button
+                        onClick={() => {
+                          exportForHG();
+                          setMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs text-[#dbdee1] hover:bg-[#35373c] transition-colors cursor-pointer"
+                      >
+                        Export for HG
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <Select
               value={displayMode}
@@ -293,13 +373,113 @@ function ReactionsTab({ token, guildId }: { token: string; guildId: string }) {
           onChange={handleChange}
           className="bg-[#1e1f22] text-white placeholder-[#6d6f78] border-transparent focus-visible:border-[#5865f2] focus-visible:ring-0"
         />
-        <Button
-          onClick={fetchData}
-          disabled={loading}
-          className="mt-1 bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
-        >
-          {loading ? "Grabbing..." : "Grab Reacts"}
-        </Button>
+        <div className="flex gap-2 mt-1">
+          <Button
+            onClick={fetchData}
+            disabled={loading}
+            className="flex-1 bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
+          >
+            {loading ? "Grabbing..." : "Grab Reacts"}
+          </Button>
+          {false && (
+            <Button
+              onClick={() => {
+                const firstNames = [
+                  "Alice",
+                  "Bob",
+                  "Charlie",
+                  "Diana",
+                  "Eve",
+                  "Frank",
+                  "Grace",
+                  "Henry",
+                  "Iris",
+                  "Jack",
+                  "Karen",
+                  "Leo",
+                  "Mia",
+                  "Noah",
+                  "Olivia",
+                  "Paul",
+                  "Quinn",
+                  "Rose",
+                  "Sam",
+                  "Tina",
+                  "Uma",
+                  "Victor",
+                  "Wendy",
+                  "Xander",
+                  "Yara",
+                  "Zoe",
+                  "Ash",
+                  "Blake",
+                  "Casey",
+                  "Drew",
+                  "Ellis",
+                  "Finn",
+                  "Gray",
+                  "Harper",
+                  "Indie",
+                  "Jules",
+                  "Kai",
+                  "Lane",
+                  "Morgan",
+                  "Noel",
+                ];
+                const nicks = [
+                  "monkey king",
+                  "chaewon fan",
+                  "kpop lord",
+                  "roblox god",
+                  "server mod",
+                  "discord gremlin",
+                  "the og",
+                  "big brain",
+                  "vibe check",
+                  "night owl",
+                  "gamer mode",
+                  "lurker",
+                  "chaos agent",
+                  "main character",
+                  "local menace",
+                  "certified nerd",
+                  "touch grass",
+                  "no sleep",
+                  "based",
+                  "certified",
+                  "gigachad",
+                  "the real one",
+                  "legend",
+                  "goat",
+                  "clutch",
+                  "lowkey",
+                  "highkey",
+                  "unhinged",
+                  "verified",
+                  "slay",
+                ];
+                const mock: User[] = Array.from({ length: 200 }, (_, i) => ({
+                  id: `10000000000000${String(i).padStart(4, "0")}`,
+                  username: `user_${i + 1}`,
+                  globalName:
+                    firstNames[i % firstNames.length] +
+                    (i >= firstNames.length
+                      ? ` ${Math.floor(i / firstNames.length) + 1}`
+                      : ""),
+                  nick: i % 3 === 0 ? nicks[i % nicks.length] : null,
+                  avatar: null,
+                }));
+                setUsers(mock);
+                setActiveGuildId("mock");
+                setDisplayMode("serverName");
+                setLastFetched(new Date());
+              }}
+              className="bg-[#35373c] hover:bg-[#3f4147] text-[#949ba4] text-xs cursor-pointer px-3"
+            >
+              Mock
+            </Button>
+          )}
+        </div>
         {error && (
           <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-4 py-2.5">
             {error}
@@ -314,6 +494,7 @@ function ReactionsTab({ token, guildId }: { token: string; guildId: string }) {
         lastFetched={lastFetched}
         activeGuildId={activeGuildId}
         celebrating={celebrating}
+        showExport
       />
     </div>
   );
